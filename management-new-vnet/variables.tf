@@ -27,7 +27,7 @@ variable "admin_username" {
 }
 
 variable "admin_password" {
-  description = "Administrator password of deployed Virtual Machine. The password must meet the complexity requirements of Azure"
+  description = "Administrator password of deployed Virtual Macine. The password must meet the complexity requirements of Azure"
   type = string
 }
 
@@ -43,7 +43,6 @@ locals { // locals for 'authentication_type' allowed values
   // will fail if [var.authentication_type] is invalid:
   validate_authentication_type_value = index(local.authentication_type_allowed_values, var.authentication_type)
 }
-
 variable "template_name" {
   description = "Template name. Should be defined according to deployment type(mgmt, ha, vmss)"
   type = string
@@ -51,13 +50,13 @@ variable "template_name" {
 }
 
 variable "template_version" {
-  description = "Template version. It is recommended to always use the latest template version"
+  description = "Template version. It is reccomended to always use the latest template version"
   type = string
   default = "20210111"
 }
 
 variable "installation_type" {
-  description = "Installation type"
+  description = "Installaiton type"
   type = string
   default = "management"
 }
@@ -82,7 +81,7 @@ locals { // locals for 'vm_os_offer' allowed values
     "R80.40",
     "R81",
     "R81.10",
-    "R81.20"
+    "R81.20",
   ]
   // will fail if [var.os_version] is invalid:
   validate_os_version_value = index(local.os_version_allowed_values, var.os_version)
@@ -103,7 +102,7 @@ locals { // locals for 'vm_os_offer' allowed values
     "check-point-cg-r8040",
     "check-point-cg-r81",
     "check-point-cg-r8110",
-    "check-point-cg-r8120",
+    "check-point-cg-r8120"
   ]
   // will fail if [var.vm_os_offer] is invalid:
   validate_os_offer_value = index(local.vm_os_offer_allowed_values, var.vm_os_offer)
@@ -130,25 +129,22 @@ locals {
   validate_admin_shell_value = index(local.admin_shell_allowed_values, var.admin_shell)
 }
 
-//********************** Networking Variables **************************//
+//********************** Natworking Variables **************************//
 variable "vnet_name" {
   description = "Virtual Network name"
   type = string
 }
 
-variable "management_subnet_name" {
-  description = "management subnet name"
+variable "address_space" {
+  description = "The address space that is used by a Virtual Network."
   type = string
+  default = "10.0.0.0/16"
 }
 
-variable "subnet_1st_Address" {
-  description = "The first available address of the subnet"
+variable "subnet_prefix" {
+  description = "Address prefix to be used for network subnet"
   type = string
-}
-
-variable "vnet_resource_group" {
-  description = "Resource group of existing vnet"
-  type = string
+  default = "10.0.0.0/24"
 }
 
 variable "vnet_allocation_method" {
@@ -182,9 +178,11 @@ locals {
   // will fail if [var.mgmt_enable_api] is invalid:
   validate_mgmt_enable_api_value = index(local.mgmt_enable_api_allowed_values, var.mgmt_enable_api)
 
-  regex_valid_subnet_1st_Address = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
-  // Will fail if var.subnet_1st_Address is invalid
-  regex_subnet_1st_Address = regex(local.regex_valid_subnet_1st_Address, var.subnet_1st_Address) == var.subnet_1st_Address ? 0 : "Variable [subnet_1st_Address] must be a valid address."
+  regex_valid_network_cidr = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/(3[0-2]|2[0-9]|1[0-9]|[0-9]))|$"
+  // Will fail if var.address_space is invalid
+  regex_address_space = regex(local.regex_valid_network_cidr, var.address_space) == var.address_space ? 0 : "Variable [address_space] must be a valid address in CIDR notation."
+  // Will fail if var.subnet_prefix is invalid
+  regex_subnet_prefix = regex(local.regex_valid_network_cidr, var.subnet_prefix) == var.subnet_prefix ? 0 : "Variable [subnet_prefix] must be a valid address in CIDR notation."
 }
 
 variable "bootstrap_script" {
@@ -207,7 +205,7 @@ variable "subscription_id" {
 }
 
 variable "client_id" {
-  description = "Application ID(Client ID)"
+  description = "Aplication ID(Client ID)"
   type = string
 }
 

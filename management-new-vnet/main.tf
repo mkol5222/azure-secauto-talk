@@ -29,22 +29,16 @@ module "common" {
 }
 
 //********************** Networking **************************//
-data "azurerm_subnet" "mgmt_subnet" {
-  name = var.management_subnet_name
-  virtual_network_name = var.vnet_name
-  resource_group_name = var.vnet_resource_group
-}
+module "vnet" {
+  source = "../modules/vnet"
 
-resource "azurerm_public_ip" "public-ip" {
-  name = var.mgmt_name
-  location = module.common.resource_group_location
+  vnet_name = var.vnet_name
   resource_group_name = module.common.resource_group_name
-  allocation_method = var.vnet_allocation_method
-  idle_timeout_in_minutes = 30
-  domain_name_label = join("", [
-    var.mgmt_name,
-    "-",
-    random_id.randomId.hex])
+  location = module.common.resource_group_location
+  address_space = var.address_space
+  subnet_prefixes = [var.subnet_prefix]
+  subnet_names = ["${var.mgmt_name}-subnet"]
+  nsg_id = module.network-security-group.network_security_group_id
 }
 
 module "network-security-group" {
@@ -152,8 +146,20 @@ module "network-security-group" {
   ]
 }
 
+resource "azurerm_public_ip" "public-ip" {
+  name = var.mgmt_name
+  location = module.common.resource_group_location
+  resource_group_name = module.common.resource_group_name
+  allocation_method = var.vnet_allocation_method
+  idle_timeout_in_minutes = 30
+  domain_name_label = join("", [
+    var.mgmt_name,
+    "-",
+    random_id.randomId.hex])
+}
+
 resource "azurerm_network_interface_security_group_association" "security_group_association" {
-  depends_on = [azurerm_network_interface.nic]
+  depends_on = [azurerm_network_interface.nic, module.network-security-group.network_security_group_id]
   network_interface_id = azurerm_network_interface.nic.id
   network_security_group_id = module.network-security-group.network_security_group_id
 }
@@ -168,9 +174,9 @@ resource "azurerm_network_interface" "nic" {
 
   ip_configuration {
     name = "ipconfig1"
-    subnet_id = data.azurerm_subnet.mgmt_subnet.id
+    subnet_id = module.vnet.vnet_subnets[0]
     private_ip_address_allocation = var.vnet_allocation_method
-    private_ip_address = var.subnet_1st_Address
+    private_ip_address = cidrhost(var.subnet_prefix, 4)
     public_ip_address_id = azurerm_public_ip.public-ip.id
   }
 }
@@ -262,7 +268,6 @@ resource "azurerm_virtual_machine" "mgmt-vm-instance" {
       admin_shell = var.admin_shell
     })
   }
-
 
   os_profile_linux_config {
     disable_password_authentication = local.SSH_authentication_type_condition
