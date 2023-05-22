@@ -7,7 +7,7 @@ module "cp-management" {
   tenant_id       = var.tenant_id
   subscription_id = var.subscription_id
 
-  
+
   resource_group_name           = "cptalk-mgmt-rg"
   mgmt_name                     = "cptalk-mgmt"
   location                      = "West Europe"

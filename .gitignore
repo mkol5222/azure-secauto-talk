@@ -2,6 +2,10 @@
 arm-principal.sh
 az-tfbackend.sh
 
+# cp TF provider files
+sid.json
+fingerprints.json
+
 # Local .terraform directories
 **/.terraform/*
 
