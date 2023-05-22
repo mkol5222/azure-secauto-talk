@@ -1,0 +1,6 @@
+client_secret = "op://Personal/cptalk-owner/client_secret"
+client_id = "op://Personal/cptalk-owner/client_id"
+tenant_id = "op://Personal/cptalk-owner/tenant_id"
+subscription_id = "op://Personal/cptalk-owner/subscription_id"
+
+cp_admin_password = "op://Personal/cptalk-cpadmin/password"
